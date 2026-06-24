@@ -1,0 +1,46 @@
+import {
+    Infinity as InfinityIcon,
+    BookOpen,
+    FileText,
+    Languages,
+    PlayCircle,
+    CalendarCheck,
+    HandHeart,
+    ShieldCheck,
+    Sparkles,
+    ArrowRight,
+    Copy,
+    Check,
+    // FacebookIcon,
+    Phone,
+    User as UserIcon,
+    Hash,
+    Loader2,
+    X,
+    PartyPopper,
+    Target,
+    GraduationCap,
+    Calculator,
+    Lock,
+    LogIn,
+    CheckCircle2,
+    TrendingDown,
+    Mail,
+  } from "lucide-react";
+
+export const audienceData = [
+    { icon: Target, title: "শূন্য থেকে শুরু করছেন?", desc: "যারা শূন্য থেকে প্রস্তুতি শুরু করছেন কিন্তু সঠিক গাইডলাইনের অভাবে হতাশ।" },
+    { icon: GraduationCap, title: "১১-২০তম গ্রেড প্রার্থী", desc: "নিবন্ধন, প্রাইমারি, সমাজসেবা, রেলসহ ১১ থেকে ২০তম গ্রেডের চাকরিপ্রার্থী।" },
+    { icon: Calculator, title: "গণিত ও ইংরেজিতে দুর্বল?", desc: "গণিত ও ইংরেজিতে দুর্বলতার কারণে যারা পরীক্ষায় ভালো করতে পারছেন না।" },
+  ];
+
+  export const featuresData = [
+    { icon: InfinityIcon, title: "লাইফটাইম অ্যাক্সেস", desc: "সকল ভিডিও ও ম্যাটেরিয়ালস এর লাইফটাইম অ্যাক্সেস" },
+    { icon: BookOpen, title: "বুক গাইডলাইন", desc: "১১ থেকে ২০তম গ্রেডের সম্পূর্ণ বুক গাইডলাইন" },
+    { icon: FileText, title: "জব সলিউশন PDF", desc: "বিগত সকল পরীক্ষার জব সলিউশন PDF" },
+    { icon: Languages, title: "৫০০টি ভোকাবুলারি", desc: "প্রতিদিন ১টি রুটিনে ৫০০টি ইংরেজি ভোকাবুলারি" },
+    { icon: PlayCircle, title: "১০০+ সমাধান ক্লাস", desc: "১০০টি বিগত প্রশ্নের সমাধান ভিডিও ক্লাস" },
+    { icon: CalendarCheck, title: "পরীক্ষার পরিকল্পনা", desc: "নিয়মিত পরীক্ষা নেওয়ার সুপরিকল্পিত রুটিন" },
+    { icon: HandHeart, title: "ব্যক্তিগত সহযোগিতা", desc: "প্রতিটি শিক্ষার্থীর জন্য ব্যক্তিগত গাইডেন্স" },
+    { icon: ShieldCheck, title: "প্রিমিয়াম সাপোর্ট", desc: "সিক্রেট ফেসবুক গ্রুপে যেকোনো সময় সহায়তা" },
+  ];
