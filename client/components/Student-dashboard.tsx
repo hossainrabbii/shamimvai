@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, Shield, BookOpen, CreditCard, LogOut, CheckCircle, Wallet, Loader2, Phone, KeyRound, Clock, Tag } from "lucide-react";
+import { User, Mail, Shield, BookOpen, CreditCard, LogOut, CheckCircle, Wallet, Loader2, Phone, KeyRound, Clock, Tag, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CourseService } from "@/services/course";
 import { EnrollmentService } from "@/services/enrollment";
-
+import { CiFacebook } from "react-icons/ci";
+import Link from "next/link";
 interface PaymentMethod {
   name: string;
   number: string;
@@ -38,6 +39,7 @@ interface IStudentState {
   _id: string;
   name: string;
   email: string;
+  facebook: string;
   role: string;
   isActive: boolean;
 }
@@ -111,41 +113,46 @@ export default function StudentDashboard() {
   };
 
   // পেমেন্ট রিকোয়েস্ট সাবমিট করা (Enrollment Create)
-  const handlePaymentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!student || !selectedCourse) return;
+// পেমেন্ট রিকোয়েস্ট সাবমিট করা (Enrollment Create)
+const handlePaymentSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!student || !selectedCourse) return;
 
-    if (!paidNumber || !transactionId) {
-      toast.error("অনুগ্রহ করে সবগুলো ফিল্ড পূরণ করুন");
-      return;
-    }
+  if (!paidNumber || !transactionId) {
+    toast.error("অনুগ্রহ করে সবগুলো ফিল্ড পূরণ করুন");
+    return;
+  }
 
-    // ফোন নম্বর ভ্যালিডেশন চেক (১১ ডিজিট ও ০১ দিয়ে শুরু)
-    const phoneRegex = /^01\d{9}$/;
-    if (!phoneRegex.test(paidNumber.trim())) {
-      toast.error("সঠিক পেমেন্ট নম্বর দিন (অবশ্যই 01 দিয়ে শুরু এবং 11 ডিজিট হতে হবে)");
-      return;
-    }
+  // ফোন নম্বর ভ্যালিডেশন চেক (১১ ডিজিট ও ০১ দিয়ে শুরু)
+  const phoneRegex = /^01\d{9}$/;
+  if (!phoneRegex.test(paidNumber.trim())) {
+    toast.error("সঠিক পেমেন্ট নম্বর দিন (অবশ্যই 01 দিয়ে শুরু এবং 11 ডিজিট হতে হবে)");
+    return;
+  }
 
-    setSubmitting(true);
-    const payload = {
-      studentId: student._id,
-      courseId: selectedCourse._id,
-      paidNumber: paidNumber.trim(),
-      transactionId: transactionId.trim().toUpperCase(),
-    };
+  setSubmitting(true);
+  
+  // 💡 ভর্তিকালীন আসল প্রাইস বের করার লজিক (ডিসকাউন্ট থাকলে সেটা, নাহলে মেইন প্রাইস)
+  const coursePrice = selectedCourse.discountPrice !== null ? selectedCourse.discountPrice : selectedCourse.price;
 
-    const res = await EnrollmentService.enrollInCourse(payload);
-    if (res?.success) {
-      toast.success(res.message || "পেমেন্ট সফলভাবে সাবমিট হয়েছে!");
-      setIsModalOpen(false);
-      fetchDashboardData(student._id); // ড্যাশবোর্ড ডাটা রিফ্রেশ
-    } else {
-      toast.error(res?.message || "সাবমিশন ব্যর্থ হয়েছে");
-    }
-    setSubmitting(false);
+  const payload = {
+    studentId: student._id,
+    courseId: selectedCourse._id,
+    amount: coursePrice, // 🔥 ব্যাকঅ্যান্ডের নতুন রিকোয়ারমেন্ট অনুযায়ী কারেন্ট প্রাইসটি পে-লোডে পাঠানো হলো
+    paidNumber: paidNumber.trim(),
+    transactionId: transactionId.trim().toUpperCase(),
   };
 
+  const res = await EnrollmentService.enrollInCourse(payload);
+  if (res?.success) {
+    toast.success(res.message || "পেমেন্ট সফলভাবে সাবমিট হয়েছে!");
+    setIsModalOpen(false);
+    fetchDashboardData(student._id); // ড্যাশবোর্ড ডাটা রিফ্রেশ
+  } else {
+    toast.error(res?.message || "সাবমিশন ব্যর্থ হয়েছে");
+  }
+  setSubmitting(false);
+};
   // একটি কোর্সের এনরোলমেন্ট স্ট্যাটাস চেক করার হেল্পার ফাংশন
   const getEnrollmentStatus = (courseId: string) => {
     const enrollment = myEnrollments.find((e) => e.courseId && (e.courseId._id === courseId || (e.courseId as any) === courseId));
@@ -161,13 +168,13 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 text-foreground">
+    <div className="bg-muted/30 text-foreground">
       {/* নেভিগেশন বার */}
       <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-r from-primary to-purple-600 text-white font-bold">S</div>
-            <span className="text-xl font-bold tracking-tight">Student<span className="text-primary">Portal</span></span>
+            <span className="text-xl font-bold tracking-tight">শিক্ষার্থী <span className="text-primary">ড্যাশবোর্ড</span></span>
           </div>
           <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive hover:bg-destructive/10">
             <LogOut className="mr-2 h-4 w-4" /> লগআউট
@@ -201,6 +208,14 @@ export default function StudentDashboard() {
                   <Shield className="h-4 w-4 text-primary" />
                   <div><span className="block text-[10px] text-muted-foreground">টাইপ</span><span className="inline-block text-[11px] font-bold text-primary capitalize">{student?.role}</span></div>
                 </div>
+                {
+                  student?.facebook ? <>
+                  <div className="flex items-center gap-3 rounded-2xl bg-muted/40 p-3">
+                <CiFacebook />
+  <div><span className="block text-[10px] text-muted-foreground">ফেসবুক</span><span className="inline-block text-[11px] font-bold text-primary capitalize"><Link href={student?.facebook} className="text-blue-400"><Button>Go to Facebook</Button></Link></span></div>
+                </div>
+                  </>:<></>
+                }
               </div>
             </div>
           </div>
@@ -246,9 +261,10 @@ export default function StudentDashboard() {
 
                       <div className="mt-5 pt-3 border-t">
                         {status === "approved" ? (
-                          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 rounded-xl">
+                          <Button className="w-full bg-emerald-600 text-white font-bold gap-1 rounded-xl">
                             <CheckCircle className="h-4 w-4" /> মডিউল আনলকড (Enter Class)
                           </Button>
+                        
                         ) : status === "pending" ? (
                           <Button disabled className="w-full bg-amber-500/20 text-amber-700 font-medium rounded-xl">
                             পেমেন্ট যাচাই করা হচ্ছে...
@@ -266,6 +282,8 @@ export default function StudentDashboard() {
             )}
           </div>
         </div>
+
+        {/* notice */}
       </main>
 
       {/* 🚀 এনরোল ও পেমেন্ট সাবমিশন মডাল */}
@@ -306,7 +324,7 @@ export default function StudentDashboard() {
             <form onSubmit={handlePaymentSubmit} className="space-y-4">
               <div>
                 <Label className="text-xs font-semibold flex items-center gap-1"><Phone className="h-3 w-3" /> যে নম্বর থেকে টাকা পাঠিয়েছেন (Paid Number) *</Label>
-                <Input type="text" maxLength={11} value={paidNumber} onChange={(e) => setPaidNumber(e.target.value)} placeholder="যেমন: 01XXXXXXXXX" className="mt-1 font-mono" />
+                <Input type="number" maxLength={11} min={0} value={paidNumber} onChange={(e) => setPaidNumber(e.target.value)} placeholder="যেমন: 01XXXXXXXXX" className="mt-1 font-mono" />
               </div>
 
               <div>

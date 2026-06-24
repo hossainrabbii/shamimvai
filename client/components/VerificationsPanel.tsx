@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { Search, Filter, CheckCircle2, Clock, Trash2, XCircle, Loader2 } from "lucide-react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
-import { EnrollmentService } from "@/services/enrollment"; // আপনার সার্ভিস ফাইলের প্রোপার পাথ দিন
-import { toast } from "sonner"; // অথবা আপনার প্রজেক্টের টোস্ট লাইব্রেরি
+import { EnrollmentService } from "@/services/enrollment"; 
+import { toast } from "sonner"; 
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
+// 💡 ইন্টারফেসটি সম্পূর্ণ টাইপ-সেফ করা হলো
 export interface Enrollment {
   _id: string;
   studentId: {
@@ -15,12 +16,14 @@ export interface Enrollment {
     name: string;
     email: string;
     phone?: string;
+    facebook?: string; // 👈 অলরেডি ডিফাইনড
   } | null;
   courseId: {
     _id: string;
     name: string;
     price: number;
   } | null;
+  amount: number; // 👈 নতুন ডেটাবেজ স্কিমা অনুযায়ী পরিমাণ ফিল্ড
   paidNumber: string;
   transactionId: string;
   status: "pending" | "approved" | "rejected";
@@ -52,41 +55,43 @@ export default function VerificationsPanel({ enrollments }: EnrollmentdProps) {
   const onApproveClick = async (id: string) => {
     setLoadingId(id);
     try {
-      // সার্ভিস কল: PATCH মেথড দিয়ে status: "approved" পাঠানো হচ্ছে
+      // সার্ভিস কল: PATCH মেথড দিয়ে status: "approved" পাঠানো হচ্ছে
       const result = await EnrollmentService.updateEnrollmentStatus(id, "approved");
 
       if (result && (result.success !== false)) {
-        handleApprove(id); // লোকাল UI স্টেট সিঙ্ক
-        toast.success("এনরোলমেন্ট সফলভাবে অনুমোদিত হয়েছে!");
+        handleApprove(id); // 🔥 লোকাল UI স্টেট সিঙ্ক (এটিই রিয়েল-টাইম চেঞ্জ হ্যান্ডেল করবে)
+        toast.success("এনরোলমেন্ট সফলভাবে অনুমোদিত হয়েছে!");
+        
+        // 🚀 ফিক্সড: window.location.reload() রিমুভ করা হলো! 
+        // এখন কাস্টম হুকের handleApprove স্টেট চেঞ্জ করার সাথে সাথেই StatCard ইনস্ট্যান্ট লাইভ আপডেট হবে।
       } else {
-        throw new Error(result?.message || "স্ট্যাটাস আপডেট করা সম্ভব হয়নি।");
+        throw new Error(result?.message || "স্ট্যাটাস আপডেট করা সম্ভব হয়নি।");
       }
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "ডাটাবেজ আপডেট করতে সমস্যা হয়েছে।");
     } finally {
-      setLoadingId(null);
+      loadingId && setLoadingId(null);
     }
   };
 
-  // 🚀 ২. আপনার সার্ভিস ব্যবহার করে ডাটাবেজ থেকে রিকোয়েস্ট Delete করা
+  // ২. আপনার সার্ভিস ব্যবহার করে ডাটাবেজ থেকে রিকোয়েস্ট Delete করা
   const onDeleteClick = async (id: string) => {
     setLoadingId(id);
     try {
-      // সার্ভিস কল: DELETE মেথড
       const result = await EnrollmentService.deleteEnrollment(id);
 
       if (result && (result.success !== false)) {
         handleDelete(id); // লোকাল UI স্টেট থেকে রিমুভ
         toast.success("এনরোলমেন্ট রিকোয়েস্টটি মুছে ফেলা হয়েছে।");
       } else {
-        throw new Error(result?.message || "মুছে ফেলা সম্ভব হয়নি।");
+        throw new Error(result?.message || "মুছে ফেলা সম্ভব হয়নি।");
       }
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "মুছে ফেলতে সমস্যা হয়েছে।");
     } finally {
-      setLoadingId(null);
+      loadingId && setLoadingId(null);
     }
   };
 
@@ -129,7 +134,7 @@ export default function VerificationsPanel({ enrollments }: EnrollmentdProps) {
               <tr>
                 <th className="px-4 py-3 text-left font-medium">কোর্সের নাম</th>
                 <th className="px-4 py-3 text-left font-medium">শিক্ষার্থীর নাম</th>
-                <th className="px-4 py-3 text-left font-medium">暗শিক্ষার্থীর ফোন</th>
+                <th className="px-4 py-3 text-left font-medium">শিক্ষার্থীর ফেসবুক</th>
                 <th className="px-4 py-3 text-left font-medium">পেমেন্ট নম্বর (Sender)</th>
                 <th className="px-4 py-3 text-left font-medium">TrxID</th>
                 <th className="px-4 py-3 text-left font-medium">আবেদনের সময়</th>
@@ -145,7 +150,7 @@ export default function VerificationsPanel({ enrollments }: EnrollmentdProps) {
                   </td>
                 </tr>
               ) : (
-                safeData.map((e) => (
+                safeData.map((e: any) => ( // 💡 টাইপ কাস্টিং সেফটি অ্যাসাইন করা হলো
                   <tr key={e._id} className="transition-colors hover:bg-secondary/40">
                     <td className="px-4 py-3 align-middle font-semibold text-foreground">
                       {e.courseId?.name ? e.courseId.name : <span className="text-destructive text-xs font-normal">কোর্সটি মুছে ফেলা হয়েছে</span>}
@@ -155,9 +160,24 @@ export default function VerificationsPanel({ enrollments }: EnrollmentdProps) {
                       {e.studentId?.name ? e.studentId.name : <span className="text-muted-foreground text-xs font-normal">অজানা ইউজার</span>}
                     </td>
 
-                    <td className="px-4 py-3 align-middle font-mono text-xs text-muted-foreground">
-                      {e.studentId?.phone || "N/A"}
-                    </td>
+                
+
+<td className="px-4 py-3 align-middle">
+  {(e.studentId as any)?.facebook ? (
+    <Button asChild size="sm" variant="outline">
+      <a
+        href={(e.studentId as any).facebook}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={(e.studentId as any).facebook}
+      >
+        Facebook
+      </a>
+    </Button>
+  ) : (
+    <span className="text-xs text-muted-foreground">N/A</span>
+  )}
+</td>
                     
                     <td className="px-4 py-3 align-middle font-mono text-xs text-foreground">
                       {e.paidNumber || "N/A"}

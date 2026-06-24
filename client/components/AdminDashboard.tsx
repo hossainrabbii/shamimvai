@@ -121,7 +121,7 @@ export default function AdminDashboard({
       />
 
       <main className="container mx-auto px-4 py-8">
-        <AdminStatCard />
+        <AdminStatCard enrollments={enrollments}/>
 
         <Tabs defaultValue="verifications" className="mt-8 flex-col">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-2 bg-muted p-2 rounded-xl">

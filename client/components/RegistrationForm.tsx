@@ -52,13 +52,10 @@ export default function RegistrationForm() {
         toast.error(res?.message || "কোথাও কোনো সমস্যা হয়েছে। আবার চেষ্টা করুন।");
         return
       }
+      
       toast.success(res?.message || "রেজিস্ট্রেশন সফল হয়েছে!");
       router.push("/student");
-      // reset value
-    //  data.name=''
-    //  data.email=''
-    //  data.password=''
-    //  data.facebook=''
+     
     } catch (error) {
       toast.error("কোথাও কোনো সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -113,6 +110,7 @@ export default function RegistrationForm() {
 
       {/* ফেসবুক লিংক ফিল্ড */}
       <Field icon={""} label="Facebook প্রোফাইল নাম/লিংক (ঐচ্ছিক / Optional)">
+      
         <Input
           value={data.facebook}
           onChange={(e) => setData({ ...data, facebook: e.target.value })}

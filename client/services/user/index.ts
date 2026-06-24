@@ -14,7 +14,6 @@ const registerUser = async (data: any) => {
       body: JSON.stringify(data),
     });
 
-    // রেসপন্স অবজেক্ট রিটার্ন করার আগে জেসন ফরম্যাট করে নেওয়া
     const result = await res.json();
     return result;
   } catch (error) {
